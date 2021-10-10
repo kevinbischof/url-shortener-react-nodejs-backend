@@ -1,6 +1,7 @@
-POST http://localhost:3000/urls/
+PUT http://localhost:3000/urls/295
 Content-Type: application/json
 
 {
-  "url": "http://www.heisee9.de/"
+  "id": 305,
+  "hitCount": 1337
 }

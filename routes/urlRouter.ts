@@ -4,6 +4,7 @@ import {Url} from "../types/url";
 const urlRouter = express.Router();
 
 urlRouter.get("/", async (req: Request, res: Response) => {
+    console.log('get /')
     urlModel.findAll((err: Error, urls: Url[]) => {
         if (err) {
             return res.status(404).json({"errorMessage": err.message});
@@ -14,19 +15,29 @@ urlRouter.get("/", async (req: Request, res: Response) => {
 });
 
 urlRouter.post("/", async (req: Request, res: Response) => {
+    console.log('post /')
     const newUrl: Url = req.body;
-    urlModel.create(newUrl, (err: Error, url: Url) => {
-        if (err) {
-            return res.status(500).json({"message": err.message});
-        }
+    console.log('newUrl: ', newUrl)
 
+    urlModel.findOneByUrl(newUrl, (err: Error, url: Url) => {
+        if (err) {
+            urlModel.create(newUrl, (err: Error, url: Url) => {
+                if (err) {
+                    return res.status(500).json({"message": err.message});
+                }
+
+                res.status(200).json({"data": url});
+            });
+        }
         res.status(200).json({"data": url});
-    });
+    })
 });
 
-urlRouter.get("/:id", async (req: Request, res: Response) => {
-    const id: number = Number(req.params.id);
-    urlModel.findOne(id, (err: Error, url: Url) => {
+urlRouter.post("/short", async (req: Request, res: Response) => {
+    console.log('post /short')
+    console.log('req.body: ', req.body)
+    const short = req.body.short.toString()
+    urlModel.findOneByShortUrl(short, (err: Error, url: Url) => {
         if (err) {
             return res.status(500).json({"message": err.message});
         }
@@ -35,6 +46,7 @@ urlRouter.get("/:id", async (req: Request, res: Response) => {
 });
 
 urlRouter.put("/:id", async (req: Request, res: Response) => {
+    console.log('get /:id')
     const url: Url = req.body;
     urlModel.update(url,true, (err: Error, url: Url) => {
         if (err) {

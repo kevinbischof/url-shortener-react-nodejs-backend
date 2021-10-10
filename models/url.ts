@@ -13,7 +13,7 @@ export const create = (url: Url, callback: Function) => {
             if (err || !result) {callback(err)}
             if (result) {
                 const insertId = (<OkPacket> result).insertId;
-                findOne(insertId, (err: Error, url: Url) => {
+                findOneById(insertId, (err: Error, url: Url) => {
                     if (err) {
                         {callback(err)}
                     }
@@ -24,7 +24,7 @@ export const create = (url: Url, callback: Function) => {
     );
 };
 
-export const findOne = (id: number, callback: Function) => {
+export const findOneById = (id: number, callback: Function) => {
 
     const queryString = `SELECT * FROM urls WHERE id = ?`
 
@@ -42,6 +42,63 @@ export const findOne = (id: number, callback: Function) => {
                 short: row.short,
                 hitCount: row.hitCount + 1,
             }
+
+            // Increase hitCount by One
+            const queryString = `UPDATE urls SET hitCount=? WHERE id=?`;
+            pool.query(queryString, [url.hitCount, url.id]);
+
+            callback(null, url);
+        }
+    });
+}
+
+export const findOneByShortUrl = (short: string, callback: Function) => {
+
+    const queryString = `SELECT * FROM urls WHERE short = ?`
+
+    pool.query(queryString, short, (err, result) => {
+        if (err) {callback(err)}
+
+        const row = (<RowDataPacket> result)[0];
+
+        if (!row) callback({name: 'short_not_found', message: 'short url not found'});
+
+        if (row) {
+            const url: Url =  {
+                id: row.id,
+                url: row.url,
+                short: row.short,
+                hitCount: row.hitCount + 1,
+            }
+
+            // Increase hitCount by One
+            const queryString = `UPDATE urls SET hitCount=? WHERE id=?`;
+            pool.query(queryString, [url.hitCount, url.id]);
+
+            callback(null, url);
+        }
+    });
+}
+
+export const findOneByUrl = (url: Url, callback: Function) => {
+
+    const queryString = `SELECT * FROM urls WHERE url = ?`
+
+    pool.query(queryString, url.url, (err, result) => {
+        if (err) {callback(err)}
+
+        const row = (<RowDataPacket> result)[0];
+
+        if (!row) callback({name: 'url_not_found', message: 'url not found'});
+
+        if (row) {
+            const url: Url =  {
+                id: row.id,
+                url: row.url,
+                short: row.short,
+                hitCount: row.hitCount + 1,
+            }
+            console.log('url from db: ', url)
 
             // Increase hitCount by One
             const queryString = `UPDATE urls SET hitCount=? WHERE id=?`;
@@ -87,7 +144,7 @@ export const update = (url: Url, returnUrl: boolean = false, callback: Function)
             (err, result) => {
                 if (err || !result) {callback(err)}
                 if (result && returnUrl) {
-                    findOne(url.id, (err: Error, url: Url) => {
+                    findOneById(url.id, (err: Error, url: Url) => {
                         if (err) {
                             {callback(err)}
                         }
