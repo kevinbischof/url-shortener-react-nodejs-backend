@@ -24,12 +24,13 @@ urlRouter.post("/", async (req: Request, res: Response) => {
             urlModel.create(newUrl, (err: Error, url: Url) => {
                 if (err) {
                     return res.status(500).json({"message": err.message});
+                } else {
+                    res.status(200).json({"data": url});
                 }
-
-                res.status(200).json({"data": url});
             });
+        } else {
+            res.status(200).json({"data": url});
         }
-        res.status(200).json({"data": url});
     })
 });
 
